@@ -11,6 +11,7 @@ lora_config_t default_config = {
     .tx = 1,
     .rx = 2,
     .baudrate = BAUDRATE_9600,
+    .speed = MEDIUM,
     .uart_id = 0,
 };
 
@@ -38,6 +39,8 @@ void lora_init(lora_config_t *config)
     gpio_set_function(config->tx, GPIO_FUNC_UART);
     gpio_set_function(config->rx, GPIO_FUNC_UART);
 
+    sleep_ms(2000);
+
     lora_reset(config);
 }
 
@@ -53,6 +56,21 @@ void lora_reset(lora_config_t *config)
     sleep_ms(2000);
 
     lora_normal_mode(config); // set normal mode
+}
+
+void lora_deinit(lora_config_t *config)
+{
+    if (config == NULL)
+    {
+        config = &default_config;
+    }
+
+    uart_deinit(config->uart_id > 0 ? uart1 : uart0);
+
+    gpio_deinit(config->m0);
+    gpio_deinit(config->m1);
+    gpio_deinit(config->tx);
+    gpio_deinit(config->rx);
 }
 
 void lora_sleep_mode(lora_config_t *config)

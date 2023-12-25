@@ -32,7 +32,7 @@ void lora_init(lora_config_t *config);
 
 void lora_reset(lora_config_t *config);
 
-void lora_configure(lora_config_t *config);
+void lora_deinit(lora_config_t *config);
 
 void lora_send_raw(uint8_t *data);
 
