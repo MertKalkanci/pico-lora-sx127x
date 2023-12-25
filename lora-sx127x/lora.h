@@ -1,3 +1,6 @@
+#ifndef LORA_H
+#define LORA_H
+
 typedef enum lora_transaction_speed {
     VERY_SLOW,
     SLOW,
@@ -34,6 +37,8 @@ void lora_reset(lora_config_t *config);
 
 void lora_deinit(lora_config_t *config);
 
+
+
 void lora_send_raw(uint8_t *data);
 
 void lora_send(struct stream data);
@@ -45,3 +50,5 @@ void lora_sleep_mode(lora_config_t *config);
 void lora_normal_mode(lora_config_t *config);
 
 void lora_powersave_mode(lora_config_t *config);
+
+#endif
