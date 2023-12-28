@@ -6,7 +6,6 @@ typedef enum config_mode {
     SAVE_AFTER_POWER_OFF=0xC0
 } config_mode_t; // set configuration mode 0xC2 to not save configuration after power off 0xC0 to save configuration after power off
 
-
 typedef enum lora_transaction_speed {
     VERY_SLOW=0,
     SLOW=1,
