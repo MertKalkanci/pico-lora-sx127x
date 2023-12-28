@@ -45,34 +45,10 @@ lora_config_t default_config = {
     .config_mode = NOT_SAVE_AFTER_POWER_OFF
 };
 
-void lora_init(lora_config_t *config)
+void lora_wait_aux(lora_config_t *config)
 {
-    if (config == NULL)
-    {
-        config = &default_config;
-    }
-
-    gpio_init(config->m0);
-    gpio_init(config->m1);
-    gpio_init(config->tx);
-    gpio_init(config->rx);
-
-    gpio_set_dir(config->m0, GPIO_OUT);
-    gpio_set_dir(config->m1, GPIO_OUT);
-    gpio_set_dir(config->tx, GPIO_OUT);
-    gpio_set_dir(config->rx, GPIO_IN);
-
-    gpio_put(config->m0, 0);
-    gpio_put(config->m1, 0);
-
-    uart_init(config->uart_id > 0 ? uart1 : uart0, 9600); //while resetting the module in sleep mode, the baudrate is 9600
-    gpio_set_function(config->tx, GPIO_FUNC_UART);
-    gpio_set_function(config->rx, GPIO_FUNC_UART);
-
-    lora_reset(config);
-
-    lora_configure(config);
-}
+    sleep_ms(2000);
+} // will be implemented later
 
 void lora_reset(lora_config_t *config)
 {
@@ -88,21 +64,6 @@ void lora_reset(lora_config_t *config)
     lora_normal_mode(config); // set normal mode
 }
 
-void lora_deinit(lora_config_t *config)
-{
-    if (config == NULL)
-    {
-        config = &default_config;
-    }
-
-    uart_deinit(config->uart_id > 0 ? uart1 : uart0);
-
-    gpio_deinit(config->m0);
-    gpio_deinit(config->m1);
-    gpio_deinit(config->tx);
-    gpio_deinit(config->rx);
-}
-
 void lora_sleep_mode(lora_config_t *config)
 {
     if (config == NULL)
@@ -114,17 +75,26 @@ void lora_sleep_mode(lora_config_t *config)
     gpio_put(config->m1, 1);
 }
 
-void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high)
+void lora_normal_mode(lora_config_t *config)
 {
     if (config == NULL)
     {
         config = &default_config;
     }
 
-    config->addres_low = low;
-    config->addres_high = high;
+    gpio_put(config->m0, 0);
+    gpio_put(config->m1, 0);
+}
 
-    lora_configure(config);
+void lora_powersave_mode(lora_config_t *config)
+{
+    if (config == NULL)
+    {
+        config = &default_config;
+    }
+
+    gpio_put(config->m0, 1);
+    gpio_put(config->m1, 0);
 }
 
 void lora_configure(lora_config_t *config)
@@ -156,26 +126,17 @@ void lora_configure(lora_config_t *config)
     lora_normal_mode(config); // set normal mode
 }
 
-void lora_normal_mode(lora_config_t *config)
+void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high)
 {
     if (config == NULL)
     {
         config = &default_config;
     }
 
-    gpio_put(config->m0, 0);
-    gpio_put(config->m1, 0);
-}
+    config->addres_low = low;
+    config->addres_high = high;
 
-void lora_powersave_mode(lora_config_t *config)
-{
-    if (config == NULL)
-    {
-        config = &default_config;
-    }
-
-    gpio_put(config->m0, 1);
-    gpio_put(config->m1, 0);
+    lora_configure(config);
 }
 
 void lora_send(const void *data, size_t size)
@@ -188,7 +149,46 @@ void lora_receive(const void *data, size_t size)
 
 }
 
-void lora_wait_aux(lora_config_t *config)
+void lora_init(lora_config_t *config)
 {
-    sleep_ms(2000);
-} // will be implemented later
+    if (config == NULL)
+    {
+        config = &default_config;
+    }
+
+    gpio_init(config->m0);
+    gpio_init(config->m1);
+    gpio_init(config->tx);
+    gpio_init(config->rx);
+
+    gpio_set_dir(config->m0, GPIO_OUT);
+    gpio_set_dir(config->m1, GPIO_OUT);
+    gpio_set_dir(config->tx, GPIO_OUT);
+    gpio_set_dir(config->rx, GPIO_IN);
+
+    gpio_put(config->m0, 0);
+    gpio_put(config->m1, 0);
+
+    uart_init(config->uart_id > 0 ? uart1 : uart0, 9600); //while resetting the module in sleep mode, the baudrate is 9600
+    gpio_set_function(config->tx, GPIO_FUNC_UART);
+    gpio_set_function(config->rx, GPIO_FUNC_UART);
+
+    lora_reset(config);
+
+    lora_configure(config);
+}
+
+void lora_deinit(lora_config_t *config)
+{
+    if (config == NULL)
+    {
+        config = &default_config;
+    }
+
+    uart_deinit(config->uart_id > 0 ? uart1 : uart0);
+
+    gpio_deinit(config->m0);
+    gpio_deinit(config->m1);
+    gpio_deinit(config->tx);
+    gpio_deinit(config->rx);
+}
