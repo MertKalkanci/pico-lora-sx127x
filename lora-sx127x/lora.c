@@ -39,6 +39,10 @@ lora_config_t default_config = {
     .baudrate = BAUDRATE_9600,
     .speed = MEDIUM,
     .uart_id = 0,
+    .addres_low = 0x00,
+    .addres_high = 0xFF,
+    .transparent_mode = false,
+    .config_mode = NOT_SAVE_AFTER_POWER_OFF
 };
 
 void lora_init(lora_config_t *config)
@@ -65,19 +69,9 @@ void lora_init(lora_config_t *config)
     gpio_set_function(config->tx, GPIO_FUNC_UART);
     gpio_set_function(config->rx, GPIO_FUNC_UART);
 
-    sleep_ms(1000);
-
     lora_reset(config);
 
-    sleep_ms(1000);
-
-    char configration_hex = config->speed + (config->baudrate + 1) * 8;
-    char *configration_command = malloc(5 * sizeof(char));
-    configration_command = strcat("SPED", &configration_hex);
-
-    uart_puts(config->uart_id > 0 ? uart1 : uart0, configration_command); // set speed and baudrate on lora module
-
-    uart_set_baudrate(config->uart_id > 0 ? uart1 : uart0, baudrate_to_int(config->baudrate)); // set baudrate on uart pins
+    lora_configure(config);
 }
 
 void lora_reset(lora_config_t *config)
@@ -89,7 +83,7 @@ void lora_reset(lora_config_t *config)
 
     uart_puts(config->uart_id > 0 ? uart1 : uart0, command); //reset module
 
-    sleep_ms(2000);
+    lora_wait_aux(config); // wait for aux pin to go high
 
     lora_normal_mode(config); // set normal mode
 }
@@ -120,6 +114,48 @@ void lora_sleep_mode(lora_config_t *config)
     gpio_put(config->m1, 1);
 }
 
+void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high)
+{
+    if (config == NULL)
+    {
+        config = &default_config;
+    }
+
+    config->addres_low = low;
+    config->addres_high = high;
+
+    lora_configure(config);
+}
+
+void lora_configure(lora_config_t *config)
+{
+    if (config == NULL)
+    {
+        config = &default_config;
+    }
+
+    lora_sleep_mode(config); // set sleep mode to configure module
+
+    uart_set_baudrate(config->uart_id > 0 ? uart1 : uart0, 9600); // set baudrate on uart pins for configuration
+
+    char *configration_command = malloc(6);
+
+    configration_command[0] = (char*)config->config_mode;
+    configration_command[1] = (char*)config->addres_high;
+    configration_command[2] = (char*)config->addres_low;
+    configration_command[3] = (char*)(config->speed + config->baudrate * 8);
+    configration_command[4] = {0x00}; // set to 0x00 for default channel Will add channel configuration later
+    configration_command[5] = (char*)(128 * config->transparent_mode + 64 + 4); 
+    // set trqansparent mode and set IO drive mode, wireless wake-up time, FEC switch, transmission power, and air wake-up time to default values
+
+    uart_puts(config->uart_id > 0 ? uart1 : uart0, configration_command); // set speed and baudrate on lora module
+    uart_set_baudrate(config->uart_id > 0 ? uart1 : uart0, baudrate_to_int(config->baudrate)); // set baudrate on uart pins
+
+    lora_wait_aux(config); // wait for aux pin to go high
+
+    lora_normal_mode(config); // set normal mode
+}
+
 void lora_normal_mode(lora_config_t *config)
 {
     if (config == NULL)
@@ -141,3 +177,18 @@ void lora_powersave_mode(lora_config_t *config)
     gpio_put(config->m0, 1);
     gpio_put(config->m1, 0);
 }
+
+void lora_send(const void *data, size_t size)
+{
+
+}
+
+void lora_receive(const void *data, size_t size)
+{
+
+}
+
+void lora_wait_aux(lora_config_t *config)
+{
+    sleep_ms(2000);
+} // will be implemented later
