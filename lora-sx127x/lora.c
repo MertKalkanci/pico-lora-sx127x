@@ -36,6 +36,7 @@ lora_config_t default_config = {
     .m1 = 5,
     .tx = 1,
     .rx = 2,
+    .aux = 6 ,
     .baudrate = BAUDRATE_9600,
     .speed = MEDIUM,
     .uart_id = 0,
@@ -45,10 +46,18 @@ lora_config_t default_config = {
     .config_mode = NOT_SAVE_AFTER_POWER_OFF
 };
 
-void lora_wait_aux(lora_config_t *config)
+void lora_blocking_wait_aux(lora_config_t *config)
 {
-    sleep_ms(2000);
-} // will be implemented later
+    if (config == NULL)
+    {
+        config = &default_config;
+    }
+
+    while (gpio_get(config->aux) == 0)
+    {
+        sleep_ms(10);
+    }
+} 
 
 void lora_reset(lora_config_t *config)
 {
@@ -59,7 +68,7 @@ void lora_reset(lora_config_t *config)
 
     uart_puts(config->uart_id > 0 ? uart1 : uart0, command); //reset module
 
-    lora_wait_aux(config); // wait for aux pin to go high
+    lora_blocking_wait_aux(config); // wait for aux pin to go high
 
     lora_normal_mode(config); // set normal mode
 }
@@ -84,6 +93,8 @@ void lora_normal_mode(lora_config_t *config)
 
     gpio_put(config->m0, 0);
     gpio_put(config->m1, 0);
+
+    lora_blocking_wait_aux(config); // wait for aux pin to go high
 }
 
 void lora_powersave_mode(lora_config_t *config)
@@ -121,7 +132,7 @@ void lora_configure(lora_config_t *config)
     uart_puts(config->uart_id > 0 ? uart1 : uart0, configration_command); // set speed and baudrate on lora module
     uart_set_baudrate(config->uart_id > 0 ? uart1 : uart0, baudrate_to_int(config->baudrate)); // set baudrate on uart pins
 
-    lora_wait_aux(config); // wait for aux pin to go high
+    lora_blocking_wait_aux(config); // wait for aux pin to go high
 
     lora_normal_mode(config); // set normal mode
 }
@@ -160,18 +171,19 @@ void lora_init(lora_config_t *config)
     gpio_init(config->m1);
     gpio_init(config->tx);
     gpio_init(config->rx);
+    gpio_init(config->aux);
 
     gpio_set_dir(config->m0, GPIO_OUT);
     gpio_set_dir(config->m1, GPIO_OUT);
     gpio_set_dir(config->tx, GPIO_OUT);
     gpio_set_dir(config->rx, GPIO_IN);
-
-    gpio_put(config->m0, 0);
-    gpio_put(config->m1, 0);
+    gpio_set_dir(config->aux, GPIO_IN);
 
     uart_init(config->uart_id > 0 ? uart1 : uart0, 9600); //while resetting the module in sleep mode, the baudrate is 9600
     gpio_set_function(config->tx, GPIO_FUNC_UART);
     gpio_set_function(config->rx, GPIO_FUNC_UART);
+
+    lora_normal_mode(config); // set normal mode
 
     lora_reset(config);
 

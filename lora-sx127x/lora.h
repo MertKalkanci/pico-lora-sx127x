@@ -31,6 +31,7 @@ typedef struct lora_config  {
     uint8_t m1;
     uint8_t tx;
     uint8_t rx;
+    uint8_t aux;
     uint8_t uart_id;
     lora_baudrate_t baudrate;
     lora_transaction_speed_t speed;
@@ -42,7 +43,7 @@ typedef struct lora_config  {
 
 int baudrate_to_int(lora_baudrate_t baudrate);
 
-void lora_wait_aux(lora_config_t *config);
+void lora_blocking_wait_aux(lora_config_t *config);
 
 void lora_reset(lora_config_t *config);
 
