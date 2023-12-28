@@ -26,8 +26,6 @@ typedef enum lora_baudrate {
     BAUDRATE_115200=7
 } lora_baudrate_t;
 
-int baudrate_to_int(lora_baudrate_t baudrate);
-
 typedef struct lora_config  {
     uint8_t m0;
     uint8_t m1;
@@ -41,6 +39,8 @@ typedef struct lora_config  {
     bool transparent_mode;
     config_mode_t config_mode;
 } lora_config_t;
+
+int baudrate_to_int(lora_baudrate_t baudrate);
 
 void lora_wait_aux(lora_config_t *config);
 
