@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <math.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/uart.h"
@@ -55,7 +57,7 @@ void lora_blocking_wait_aux(lora_config_t *config)
 
     while (gpio_get(config->aux) == 0)
     {
-        sleep_ms(10);
+        sleep_us(10);
     }
 } 
 
@@ -150,12 +152,55 @@ void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high)
     lora_configure(config);
 }
 
-void lora_send(const void *data, size_t size)
+void lora_pad_data(void *data, size_t size)
 {
-
+    if (size < 58)
+    {
+        char *new_data = malloc(58);
+        memcpy(new_data, (char*)data, size);
+        char fill = 0x01;
+        for (int i = size; i < 58; i++)
+        {
+            strcat(new_data, &fill);
+        }
+        *data = (void*)new_data;
+    }
 }
 
-void lora_receive(const void *data, size_t size)
+void lora_send(const void *data, const lora_config_t *config, size_t size)
+{
+    /* divide data into 58 byte chunks
+    * send each chunk seperately
+    * wait for aux pin to go high after each chunk
+    * if data is less than 58 bytes, send it all at once and add padding */
+    char *data_to_send;
+    int chunks = ceil(size / 58);
+
+    data_to_send = malloc(chunks * 58);
+
+    for (int i = 0; i < chunks; i++)
+    {
+        int length = strlen((char*)data) - i * 58; // length of data left to send
+        char *temp = malloc(length);
+
+        memcpy(temp, (char*)data + i * 58, length); // copy bytes from data to temp
+        lora_pad_data(temp, length); // add padding to temp
+
+        strcat(data_to_send, temp); // add temp to data_to_send
+    }
+
+    for (int i = 0; i < chunks; i++)
+    {
+        char *chunk = malloc(58);
+        memcpy(chunk, data_to_send + i * 58, 58);
+
+        uart_puts(config->uart_id > 0 ? uart1 : uart0, chunk); // send chunk
+
+        lora_blocking_wait_aux(config); // wait for aux pin to go high
+    }
+}
+
+void lora_receive(void *data, size_t size)
 {
 
 }
