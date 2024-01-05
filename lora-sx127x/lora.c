@@ -216,7 +216,7 @@ void lora_receive(const lora_config_t *config, void *data, size_t size)
 
     uart_read_blocking(config->uart_id > 0 ? uart1 : uart0, temp, chunks * 58);
 
-    memcpy(data, temp, size);
+    memcpy(data, (void*)temp, size);
     free(temp);
 }
 
