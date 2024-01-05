@@ -3,7 +3,7 @@
 #include "hardware/gpio.h"
 #include "hardware/uart.h"
 #include "hardware/irq.h"
-#include "lora-sx127x/lora.h"
+#include "lora.h"
 
 int main ()
 {
