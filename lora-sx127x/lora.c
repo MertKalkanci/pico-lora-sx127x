@@ -137,6 +137,8 @@ void lora_configure(lora_config_t *config)
     lora_blocking_wait_aux(config); // wait for aux pin to go high
 
     lora_normal_mode(config); // set normal mode
+
+    free(configration_command);
 }
 
 void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high)
@@ -164,6 +166,8 @@ void lora_pad_data(void *data, size_t size)
             strcat(new_data, &fill);
         }
         *data = (void*)new_data;
+
+        free(new_data);
     }
 }
 
@@ -187,6 +191,8 @@ void lora_send(const void *data, const lora_config_t *config, size_t size)
         lora_pad_data(temp, length); // add padding to temp
 
         strcat(data_to_send, temp); // add temp to data_to_send
+
+        free(temp);
     }
 
     for (int i = 0; i < chunks; i++)
@@ -198,6 +204,8 @@ void lora_send(const void *data, const lora_config_t *config, size_t size)
 
         lora_blocking_wait_aux(config); // wait for aux pin to go high
     }
+
+    free(data_to_send);
 }
 
 void lora_receive(void *data, size_t size)
