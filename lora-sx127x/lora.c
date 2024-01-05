@@ -48,7 +48,7 @@ lora_config_t default_config = {
     .config_mode = NOT_SAVE_AFTER_POWER_OFF
 };
 
-void lora_blocking_wait_aux(lora_config_t *config)
+void lora_blocking_wait_aux(const lora_config_t *config)
 {
     if (config == NULL)
     {

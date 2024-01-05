@@ -70,7 +70,7 @@ typedef struct lora_config  {
 
 int baudrate_to_int(lora_baudrate_t baudrate);
 
-void lora_blocking_wait_aux(lora_config_t *config);
+void lora_blocking_wait_aux(const lora_config_t *config);
 
 void lora_reset(lora_config_t *config);
 
