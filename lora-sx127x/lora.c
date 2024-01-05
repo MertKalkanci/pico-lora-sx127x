@@ -210,7 +210,7 @@ void lora_send(const lora_config_t *config, const void *data, size_t size)
     free(data_to_send);
 }
 
-void lora_receive(const lora_config_t *config, void *data, size_t size)
+void lora_receive_blocking(const lora_config_t *config, void *data, size_t size)
 {
     /* divide data into 58 byte chunks
     * receive all chunks at once */
