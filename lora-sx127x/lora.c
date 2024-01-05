@@ -154,17 +154,19 @@ void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high)
     lora_configure(config);
 }
 
-void lora_pad_data(char *data, size_t size)
+void lora_pad_data(char *restrict data, size_t size)
 {
     if (size < 58)
     {
+        char fill = 0x01;
         char *new_data = malloc(58);
         memcpy(new_data, data, size);
-        char fill = 0x01;
+
         for (int i = size; i < 58; i++)
         {
             strcat(new_data, &fill);
         }
+        
         data = malloc(58);
         data = new_data;
     }

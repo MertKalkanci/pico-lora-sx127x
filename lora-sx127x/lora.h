@@ -84,7 +84,7 @@ void lora_configure(lora_config_t *config);
 
 void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high);
 
-void lora_pad_data(char *data, size_t size);
+void lora_pad_data(char *restrict data, size_t size);
 
 void lora_send(const lora_config_t *config, const void *data, size_t size);
 
