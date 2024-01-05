@@ -127,7 +127,7 @@ void lora_configure(lora_config_t *config)
     configration_command[1] = (char*)config->addres_high;
     configration_command[2] = (char*)config->addres_low;
     configration_command[3] = (char*)(config->speed | config->baudrate * BAUDRATE_CONFIG); // set air data speed and baudrate on lora module
-    configration_command[4] = 0x00; // set to 0x00 for default channel Will add channel configuration later
+    configration_command[4] = TRANSMISSION_CHANNEL_DEFAULT; // set to 0x00 for default channel Will add channel configuration later
     configration_command[5] = (char*)(TRANSPARENT_MODE * config->transparent_mode | IO_DRIVE_MODE_DEFAULT | WIRELESS_WAKE_UP_TIME_DEFAULT | FEC_SWITCH_DEFAULT | TRANSMISSION_POWER_DEFAULT); 
     // set trqansparent mode and set IO drive mode, wireless wake-up time, FEC switch, transmission power, and air wake-up time to default values
 
