@@ -171,7 +171,7 @@ void lora_pad_data(void *data, size_t size)
     }
 }
 
-void lora_send(const void *data, const lora_config_t *config, size_t size)
+void lora_send(const lora_config_t *config, const void *data, size_t size)
 {
     /* divide data into 58 byte chunks
     * send each chunk seperately
@@ -208,9 +208,17 @@ void lora_send(const void *data, const lora_config_t *config, size_t size)
     free(data_to_send);
 }
 
-void lora_receive(void *data, size_t size)
+void lora_receive(const lora_config_t *config, void *data, size_t size)
 {
+    /* divide data into 58 byte chunks
+    * receive all chunks at once */
+    int chunks = ceil(size / 58);
+    uint8_t *temp = malloc(chunks * 58);
 
+    uart_read_blocking(config->uart_id > 0 ? uart1 : uart0, temp, chunks * 58);
+
+    memcpy(data, temp, size);
+    free(temp);
 }
 
 void lora_init(lora_config_t *config)
