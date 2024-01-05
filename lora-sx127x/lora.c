@@ -185,11 +185,12 @@ void lora_send(const lora_config_t *config, const void *data, size_t size)
 
     for (int i = 0; i < chunks; i++)
     {
-        int length = strlen((char*)data) - i * 58; // length of data left to send
-        char *temp = malloc(length);
+        int length_left = strlen((char*)data) - i * 58; // length of data left to send
+        int copy_length = length_left < 58 ? length_left : 58; // length of data to copy
+        char *temp = malloc(copy_length); // temp array to hold data
 
-        memcpy(temp, (char*)data + i * 58, length); // copy bytes from data to temp
-        lora_pad_data(temp, length); // add padding to temp
+        memcpy(temp, (char*)data + i * 58, copy_length); // copy bytes from data to temp
+        lora_pad_data(temp, copy_length); // add padding to temp
 
         strcat(data_to_send, temp); // add temp to data_to_send
 
