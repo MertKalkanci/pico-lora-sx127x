@@ -34,7 +34,7 @@ int main ()
     for (int i = 0; i < 10; i++) {
             message_sent->data[i] = i;
     }
-    while (1) 
+    while (true) 
     {
         lora_send(&my_lora_config, message_sent, sizeof(simple_message_t));
 

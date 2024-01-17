@@ -31,7 +31,7 @@ int main ()
 
     simple_message_t *message_received = malloc(sizeof(simple_message_t));
 
-    while (1) {
+    while (true) {
         lora_receive_blocking(&my_lora_config, message_received, sizeof(simple_message_t));
 
         printf("Message received with ID: %d\n", message_received->id);
