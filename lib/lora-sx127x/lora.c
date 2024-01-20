@@ -8,6 +8,8 @@
 #include "hardware/irq.h"
 #include "lora.h"
 
+int padding = 58;
+
 int baudrate_to_int(lora_baudrate_t baudrate)
 {
     switch (baudrate)
@@ -156,18 +158,14 @@ void lora_set_address(lora_config_t *config, uint8_t low, uint8_t high)
 
 void lora_pad_data(char *restrict data, size_t size)
 {
-    if (size < 58)
+    if (size <= padding)
     {
         char fill = 0x01;
-        char *new_data = malloc(58);
+        char *new_data = (char*)calloc(padding,1); 
+        //malloc with inital decleration value of 0, mostly used for array declerations but its useful here to dont send any trash data
         memcpy(new_data, data, size);
+        free(data);
 
-        for (int i = size; i < 58; i++)
-        {
-            strcat(new_data, &fill);
-        }
-        
-        data = malloc(58);
         data = new_data;
     }
 }
@@ -179,17 +177,18 @@ void lora_send(const lora_config_t *config, const void *data, size_t size)
     * wait for aux pin to go high after each chunk
     * if data is less than 58 bytes, send it all at once and add padding */
     char *data_to_send;
-    int chunks = ceil(size / 58);
+    int unsigned chunks = ceil(size / padding);
 
-    data_to_send = malloc(chunks * 58);
+    data_to_send = (char*)calloc(chunks * padding,1);
 
     for (int i = 0; i < chunks; i++)
     {
-        int length_left = strlen((char*)data) - i * 58; // length of data left to send
-        int copy_length = length_left < 58 ? length_left : 58; // length of data to copy
-        char *temp = malloc(copy_length); // temp array to hold data
+        int unsigned length_left = strlen((char*)data) - i * padding; // length of data left to send
+        int copy_length = length_left < padding ? length_left : padding; // length of data to copy
 
-        memcpy(temp, (char*)data + i * 58, copy_length); // copy bytes from data to temp
+        char *temp = malloc(copy_length); // temp array to hold data
+        memcpy(temp, (char*)data + i * padding, copy_length); // copy bytes from data to temp
+        
         lora_pad_data(temp, copy_length); // add padding to temp
 
         strcat(data_to_send, temp); // add temp to data_to_send
@@ -199,8 +198,8 @@ void lora_send(const lora_config_t *config, const void *data, size_t size)
 
     for (int i = 0; i < chunks; i++)
     {
-        char *chunk = malloc(58);
-        memcpy(chunk, data_to_send + i * 58, 58);
+        char *chunk = malloc(padding);
+        memcpy(chunk, data_to_send + i * padding, padding);
 
         uart_puts(config->uart_id > 0 ? uart1 : uart0, chunk); // send chunk
 
@@ -212,12 +211,12 @@ void lora_send(const lora_config_t *config, const void *data, size_t size)
 
 void lora_receive_blocking(const lora_config_t *config, void *data, size_t size)
 {
-    /* divide data into 58 byte chunks
+    /* divide data into padding byte chunks
     * receive all chunks at once */
-    int chunks = ceil(size / 58);
-    uint8_t *temp = malloc(chunks * 58);
+    int chunks = ceil(size / padding);
+    uint8_t *temp = malloc(chunks * padding);
 
-    uart_read_blocking(config->uart_id > 0 ? uart1 : uart0, temp, chunks * 58);
+    uart_read_blocking(config->uart_id > 0 ? uart1 : uart0, temp, chunks * padding);
 
     memcpy(data, (void*)temp, size);
     free(temp);

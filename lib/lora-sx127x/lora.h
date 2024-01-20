@@ -68,7 +68,9 @@ typedef struct lora_config  {
     config_mode_t config_mode;
 } lora_config_t;
 
-int baudrate_to_int(lora_baudrate_t baudrate);
+extern int padding;
+
+extern int baudrate_to_int(lora_baudrate_t baudrate);
 
 void lora_blocking_wait_aux(const lora_config_t *config);
 
