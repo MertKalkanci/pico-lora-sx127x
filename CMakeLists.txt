@@ -8,8 +8,6 @@ set(CMAKE_CXX_STANDARD 11)
 include(pico_sdk_import.cmake)
 
 project(lora-sx127x-demo C CXX ASM)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
 
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
